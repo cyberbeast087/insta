@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/capture.js",
+      "src": "capture.js",
       "use": "@vercel/node"
     },
     {
@@ -12,12 +12,12 @@
   ],
   "routes": [
     {
-      "src": "/api/capture",
-      "dest": "api/capture.js"
+      "src": "capture",
+      "dest": "capture.js"
     },
     {
       "src": "/(.*)",
-      "dest": "public/index.html"
+      "dest": "index.html"
     }
   ]
 }
